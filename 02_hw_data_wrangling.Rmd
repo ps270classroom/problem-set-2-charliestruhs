@@ -75,7 +75,7 @@ In the writeup, describe which type of candidate sponsored the most promoting ad
 
 ## Answer 2
 
-```{r eval = FALSE}
+```{r}
 party_incumbent_promote <- fb_ads |>
   filter(office %in% c("US House", "US Senate"))|>
   group_by(party, incumbency) |>
