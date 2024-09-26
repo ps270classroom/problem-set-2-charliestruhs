@@ -1,6 +1,6 @@
 ---
 title: "Problem Set 2: Data Wrangling"
-author: Your Name Here
+author: Charlie Struhs
 output: pdf_document
 ---
 
@@ -37,7 +37,8 @@ Political advertising has traditionally been focused on the medium of television
 
 ## Question 1 (8 points)
 
-Load the data using the `read_csv` function and save it as `fb_ads` (using this will automatically make `fb_ads` a tibble). In the text, describe how many candidates there are in the dataset. 
+Load the data using the `read_csv` function and save it as `fb_ads` (using this will automatically make `fb_ads` a tibble). In the text, describe how many candidates there are in the dataset.
+
 
 Use `dplyr` functions to create a table with the number of candidates in each type of incumbency status in the data set. Save this table output as `incumbency_table` (for the autograder). Use the function `knitr::kable()` on this table to have a nicely formatted table produced in the knitted output. 
 
@@ -45,7 +46,20 @@ Use `dplyr` functions to create a table with the number of candidates in each ty
 
 ## Answer 1
 
+```{r}
+library(dplyr)
+library(readr)
+library(knitr)
+fb_ads <-
+  read_csv("data/fb_ads.csv")
+fb_ads
 
+incumbency_table <- fb_ads |>
+  group_by(incumbency) |>
+  summarize(count = n())
+knitr::kable(incumbency_table)
+```
+There are 7014 candidates. 
 
 \newpage
 
@@ -55,18 +69,23 @@ Filter the data to just US House and US Senate races and use this to create a ti
 
 Use `knitr::kable()` to produce a nicely formatted table. In this call, set the `digits` arguments to 3 and use the `col.names` argument to pass a nicer set of names. You can use the following as a template:
 
-```{r eval = FALSE}
-knitr::kable(my_table, col.names = c("Variable 1", "Variable 2", ...))
-```
-
 In the writeup, describe which type of candidate sponsored the most promoting ads on average. 
 
  **Rubric**: 3pts for creating `party_incumbent_promote` correctly (autograder); 2pt for a nicely formatted table (PDF); 1pt for changing the column names of the output table (PDF); 1pt for correctly identifying the type of candidate with highest average (PDF)
 
 ## Answer 2
 
-
-
+```{r eval = FALSE}
+party_incumbent_promote <- fb_ads |>
+  filter(office %in% c("US House", "US Senate"))|>
+  group_by(party, incumbency) |>
+summarize(promote_prop = mean(ad_tone_promote, na.rm = TRUE))|>
+  ungroup()
+knitr::kable(party_incumbent_promote,
+             col.names = c("Party", "Incumbency Status", "Promote Proportion"),
+             digits = 3)
+```
+The Democratic Incumbents, on average, sponsored the most promoting ads.
 \newpage
 
 ## Question 3 (7 points)
@@ -80,8 +99,19 @@ Create a histogram of this variable for just the US House races. Save the ggplot
 
 ## Answer 3
 
+```{r}
+library(ggplot2)
+fb_ads <- fb_ads |>
+mutate(impressions_millions = impressions/1000000)
 
+plot_q3 <- fb_ads |>
+  filter(office=="US House") |>
+  ggplot(aes(x = impressions_millions)) +
+  geom_histogram()
+print(plot_q3)
+```
 
+the histogram seems to have a skewed right distribution. The majority of the house candidates do NOT have more than 10 million ads impressions on facebook.
 \newpage
 
 ## Question 4 (13 points)
@@ -102,9 +132,21 @@ You do not need to exactly match the labels, but you should have informative lab
  **Rubric:** 3pts for correct axes (autograder); 3pts for correct data fed into `ggplot` (autograder); 3pts for the correct ordering of the y-axis (PDF); 3pts for fill being mapped to `party` (autograder); 1pt for plot being in knitted output and having informative labels (PDF)
 
 ## Answer 4
+```{r}
 
+fb_top_plot <- fb_ads |>
+filter(office == "US House") |>
+arrange(desc(impressions_millions)) |>
+slice_max(order_by = impressions_millions, n=15)|>
+ggplot(aes(x = impressions_millions, y = reorder(cand_name_last, impressions_millions))) +
+geom_bar(stat = "identity", aes(fill = party)) + 
+labs (title = "Top 15 House Candidate Facebook Ad Impressions, 2017-2018",
+x= "Facebook Ad Impressions (in millions)",
+y = "Candidate Last Name") +
+scale_fill_manual(values = c(R = "red", D = "blue"))
+fb_top_plot
 
-
+```
 \newpage
 
 
