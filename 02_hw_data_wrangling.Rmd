@@ -84,6 +84,7 @@ summarize(promote_prop = mean(ad_tone_promote, na.rm = TRUE))|>
 knitr::kable(party_incumbent_promote,
              col.names = c("Party", "Incumbency Status", "Promote Proportion"),
              digits = 3)
+party_incumbent_promote
 ```
 The Democratic Incumbents, on average, sponsored the most promoting ads.
 \newpage
